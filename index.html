@@ -3,33 +3,31 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Museo AR</title>
-    <!-- Carga de librerias WebAR -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     <style>
-      /* Boton en pantalla para dar permiso de reproduccion de audio/video */
       #playButton {
         position: fixed;
         top: 20px;
         left: 50%;
         transform: translateX(-50%);
         z-index: 9999;
-        padding: 12px 24px;
+        padding: 14px 28px;
         background-color: #007bff;
         color: white;
         border: none;
-        border-radius: 20px;
+        border-radius: 30px;
         font-size: 16px;
         font-family: sans-serif;
         font-weight: bold;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        cursor: pointer;
       }
     </style>
   </head>
   <body style="margin: 0; overflow: hidden;">
 
-    <!-- Boton para iniciar experiencia con audio en celulares -->
-    <button id="playButton">Toca aqui para iniciar</button>
+    <button id="playButton">Toca aquí para iniciar</button>
     
     <a-scene 
       mindar-image="imageTargetSrc: ./cuadro.mind;" 
@@ -39,13 +37,20 @@
       device-orientation-permission-ui="enabled: false">
       
       <a-assets>
-        <!-- Tu archivo de video -->
-        <video id="miVideo" src="./video.mp4" preload="auto" loop crossorigin="anonymous" webkit-playsinline playsinline></video>
+        <video 
+          id="miVideo" 
+          src="./video.mp4" 
+          preload="auto" 
+          loop 
+          muted
+          crossorigin="anonymous" 
+          webkit-playsinline 
+          playsinline>
+        </video>
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <!-- Cuando se detecta la foto del cuadro, se muestra el video -->
       <a-entity mindar-image-target="targetIndex: 0">
         <a-video src="#miVideo" width="1" height="0.75" position="0 0 0"></a-video>
       </a-entity>
@@ -57,14 +62,17 @@
       const video = document.querySelector('#miVideo');
       const sceneEl = document.querySelector('a-scene');
 
-      // Al tocar el boton se activa el video y se oculta el boton
+      // Al tocar el botón habilitamos el audio y dejamos listo el video
       playBtn.addEventListener('click', () => {
-        video.play();
-        video.pause(); // Carga previa del video para habilitar audio
-        playBtn.style.display = 'none';
+        video.muted = false; // Le quitamos el silencio tras la interacción del usuario
+        video.play().then(() => {
+          video.pause(); // Lo pausamos hasta que la cámara encuentre el cuadro
+        }).catch(err => console.log("Error al activar video:", err));
+        
+        playBtn.style.display = 'none'; // Ocultamos el botón
       });
 
-      // Control de reproduccion segun la camara detecte o pierda el cuadro
+      // Control de reproducción según tracking
       sceneEl.addEventListener("arReady", () => {
         const target = document.querySelector('[mindar-image-target]');
         
