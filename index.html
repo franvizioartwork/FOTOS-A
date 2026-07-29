@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Librerías gratuitas A-Frame y MindAR -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+    <style>
+      /* Botón de inicio para permitir audio en iOS/Android */
+      #startButton {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 999;
+        padding: 15px 25px;
+        font-size: 18px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      }
+    </style>
+  </head>
+  <body style="margin: 0; overflow: hidden;">
+
+    <!-- Botón flotante inicial -->
+    <button id="startButton">Toca aquí para iniciar la experiencia</button>
+
+    <!-- Escena RA -->
+    <a-scene 
+      mindar-image="imageTargetSrc: ./targets.mind;" 
+      color-space="sRGB" 
+      renderer="colorManagement: true, physicallyCorrectLights" 
+      vr-mode-ui="enabled: false" 
+      device-orientation-permission-ui="enabled: false">
+      
+      <a-assets>
+        <!-- Tu video subido en la misma carpeta -->
+        <video id="videoCuadro" src="./video.mp4" preload="auto" loop crossorigin="anonymous" webkit-playsinline playsinline></video>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <!-- Reemplaza width y height con las proporciones de tu cuadro -->
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-video src="#videoCuadro" width="1" height="0.6" position="0 0 0"></a-video>
+      </a-entity>
+    </a-scene>
+
+    <script>
+      const startButton = document.querySelector('#startButton');
+      const video = document.querySelector('#videoCuadro');
+      const targetEntity = document.querySelector('[mindar-image-target]');
+
+      // Al tocar el botón se habilita el audio del navegador y se oculta el botón
+      startButton.addEventListener('click', () => {
+        video.play();
+        video.pause(); // Pre-carga el audio en el navegador
+        startButton.style.display = 'none';
+      });
+
+      // Reproduce al apuntar al cuadro y pausa al quitar la cámara
+      targetEntity.addEventListener('targetFound', () => {
+        video.play();
+      });
+
+      targetEntity.addEventListener('targetLost', () => {
+        video.pause();
+      });
+    </script>
+  </body>
+</html>
